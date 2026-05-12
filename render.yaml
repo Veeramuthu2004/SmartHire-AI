@@ -8,7 +8,8 @@ services:
     name: smarthire-backend
     env: docker
     plan: free
-    dockerfilePath: backend/Dockerfile
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     autoDeploy: true
     envVars:
