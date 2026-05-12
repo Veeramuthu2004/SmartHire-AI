@@ -3,8 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
+from app.database import init_db
 
 load_dotenv()
+
+# Initialize database on startup
+try:
+    init_db()
+except Exception as e:
+    print(f"Database initialization warning: {e}")
 
 # Import routers
 try:
@@ -17,6 +24,11 @@ except ImportError:
 async def lifespan(app: FastAPI):
     # Startup
     print("🚀 SmartHire AI backend starting...")
+    try:
+        init_db()
+        print("✅ Database initialized")
+    except Exception as e:
+        print(f"⚠️  Database init: {e}")
     yield
     # Shutdown
     print("🛑 SmartHire AI backend shutting down...")
