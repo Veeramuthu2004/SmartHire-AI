@@ -11,11 +11,13 @@ This project is set up for a split deployment:
 2. Render will create:
    - a managed PostgreSQL database
    - a Docker web service for the FastAPI backend
-3. After deploy, note the backend URL, for example:
+3. If you are using the safe deployment branch, deploy from `deploy-fix`.
+4. After deploy, note the backend URL, for example:
    - `https://smarthire-backend.onrender.com`
-4. Set any optional API keys in Render environment variables:
+5. Set any optional API keys in Render environment variables:
    - `OPENAI_API_KEY`
    - `GEMINI_API_KEY`
+6. If Render asks for a Dockerfile path, use the root `Dockerfile`.
 
 ## 2) Deploy the frontend to Vercel
 
@@ -29,6 +31,7 @@ This project is set up for a split deployment:
 - Backend CORS already allows `*.vercel.app` and `*.onrender.com`.
 - The frontend must point to the Render backend via `VITE_API_URL`.
 - If you change domains, update Render `CORS_ORIGINS` accordingly.
+- The repository's `deploy-fix` branch contains the Render-safe Dockerfile layout.
 
 ## 4) Local build checks
 
