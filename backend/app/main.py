@@ -7,12 +7,6 @@ from app.database import init_db
 
 load_dotenv()
 
-# Initialize database on startup
-try:
-    init_db()
-except Exception as e:
-    print(f"Database initialization warning: {e}")
-
 # Import routers
 try:
     from app.api import auth_router, resume_router, analysis_router
@@ -28,7 +22,7 @@ async def lifespan(app: FastAPI):
         init_db()
         print("✅ Database initialized")
     except Exception as e:
-        print(f"⚠️  Database init: {e}")
+        print(f"⚠️  Database init warning: {e}")
     yield
     # Shutdown
     print("🛑 SmartHire AI backend shutting down...")
@@ -42,12 +36,23 @@ app = FastAPI(
 )
 
 # Configure CORS
-cors_origins = os.getenv("CORS_ORIGINS", '["http://localhost:3000","http://localhost:5173"]')
-try:
-    import json
-    cors_origins = json.loads(cors_origins)
-except:
-    cors_origins = ["http://localhost:3000", "http://localhost:5173"]
+import json
+
+default_origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
+
+cors_env = os.getenv("CORS_ORIGINS")
+if cors_env:
+    try:
+        cors_origins = list({*default_origins, *json.loads(cors_env)})
+    except Exception:
+        cors_origins = default_origins
+else:
+    cors_origins = default_origins
 
 app.add_middleware(
     CORSMiddleware,

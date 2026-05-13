@@ -1,129 +1,94 @@
-import PyPDF2
-from docx import Document
-from typing import Dict, List, Any
-import re
+from typing import Any, Dict, List
 import os
-from dotenv import load_dotenv
+import re
+from docx import Document
+from PyPDF2 import PdfReader
 
-load_dotenv()
 
 class ResumeParserService:
-    """Extract text and structure from PDF and DOCX files"""
-
     @staticmethod
     def extract_pdf_text(file_path: str) -> str:
-        """Extract text from PDF file"""
-        try:
-            text = ""
-            with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                for page in pdf_reader.pages:
-                    text += page.extract_text() + "\n"
-            return text
-        except Exception as e:
-            raise Exception(f"Error reading PDF: {str(e)}")
+        text = []
+        with open(file_path, "rb") as file:
+            reader = PdfReader(file)
+            for page in reader.pages:
+                extracted = page.extract_text() or ""
+                text.append(extracted)
+        return "\n".join(text)
 
     @staticmethod
     def extract_docx_text(file_path: str) -> str:
-        """Extract text from DOCX file"""
-        try:
-            doc = Document(file_path)
-            text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
-            return text
-        except Exception as e:
-            raise Exception(f"Error reading DOCX: {str(e)}")
+        doc = Document(file_path)
+        return "\n".join(paragraph.text for paragraph in doc.paragraphs)
 
     @staticmethod
     def extract_text(file_path: str, file_type: str) -> str:
-        """Extract text from any supported file type"""
-        if file_type.lower() == "pdf":
+        file_type = file_type.lower()
+        if file_type == "pdf":
             return ResumeParserService.extract_pdf_text(file_path)
-        elif file_type.lower() == "docx":
+        if file_type == "docx":
             return ResumeParserService.extract_docx_text(file_path)
-        else:
-            raise ValueError(f"Unsupported file type: {file_type}")
+        raise ValueError(f"Unsupported file type: {file_type}")
 
     @staticmethod
     def parse_resume(raw_text: str) -> Dict[str, Any]:
-        """Parse resume text and extract structured data"""
-        parsed = {
+        return {
             "name": ResumeParserService._extract_name(raw_text),
             "email": ResumeParserService._extract_email(raw_text),
             "phone": ResumeParserService._extract_phone(raw_text),
             "skills": ResumeParserService._extract_skills(raw_text),
             "education": ResumeParserService._extract_education(raw_text),
             "experience": ResumeParserService._extract_experience(raw_text),
-            "summary": raw_text[:500],  # First 500 chars as summary
+            "projects": ResumeParserService._extract_projects(raw_text),
+            "summary": raw_text[:500],
         }
-        return parsed
 
     @staticmethod
     def _extract_email(text: str) -> str:
-        """Extract email address"""
-        email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-        matches = re.findall(email_pattern, text)
-        return matches[0] if matches else ""
+        match = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text)
+        return match.group(0) if match else ""
 
     @staticmethod
     def _extract_phone(text: str) -> str:
-        """Extract phone number"""
-        phone_pattern = r'\+?1?\d{9,15}|(?:\+\d{1,3})?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}'
-        matches = re.findall(phone_pattern, text)
-        return matches[0] if matches else ""
+        match = re.search(r"(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}", text)
+        return match.group(0) if match else ""
 
     @staticmethod
     def _extract_name(text: str) -> str:
-        """Extract name from resume (usually first line or after contact)"""
-        lines = text.split('\n')
-        # Usually name is in first few lines and is capitalized
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if not lines:
+            return "Unknown"
         for line in lines[:5]:
-            line = line.strip()
-            if line and len(line) < 100 and line.isupper() or (line[0].isupper() and ' ' in line):
+            if 2 <= len(line.split()) <= 4 and all(part[:1].isalpha() for part in line.split()):
                 return line
-        return "Unknown"
+        return lines[0][:80]
 
     @staticmethod
     def _extract_skills(text: str) -> List[str]:
-        """Extract skills from resume"""
-        # Common tech skills - can be expanded
-        tech_skills = [
-            "python", "java", "javascript", "typescript", "c++", "c#", "ruby", "php", "go", "rust",
-            "react", "vue", "angular", "svelte", "fastapi", "django", "flask", "spring", "express",
-            "postgresql", "mysql", "mongodb", "redis", "elasticsearch",
-            "aws", "azure", "gcp", "docker", "kubernetes", "jenkins",
-            "git", "rest api", "graphql", "sql", "nosql",
-            "machine learning", "deep learning", "nlp", "computer vision",
-            "html", "css", "bootstrap", "tailwind", "sass"
+        skill_terms = [
+            "python", "javascript", "typescript", "react", "nextjs", "nodejs", "fastapi",
+            "django", "flask", "sql", "postgresql", "mysql", "mongodb", "redis",
+            "aws", "docker", "kubernetes", "git", "html", "css", "tailwind", "spaCy",
+            "pandas", "numpy", "scikit-learn", "machine learning", "nlp", "graphql"
         ]
-        
-        found_skills = []
-        text_lower = text.lower()
-        for skill in tech_skills:
-            if skill in text_lower:
-                found_skills.append(skill)
-        
-        return list(set(found_skills))  # Remove duplicates
+        lowered = text.lower()
+        found = [skill for skill in skill_terms if skill.lower() in lowered]
+        return sorted(set(found))
 
     @staticmethod
     def _extract_education(text: str) -> List[str]:
-        """Extract education information"""
-        education_keywords = ["bachelor", "master", "phd", "diploma", "certificate", "b.tech", "b.s", "m.s", "bca", "mca"]
-        education = []
-        lines = text.split('\n')
-        for line in lines:
-            if any(keyword in line.lower() for keyword in education_keywords):
-                education.append(line.strip())
-        return education
+        keywords = ["education", "bachelor", "master", "phd", "b.tech", "m.tech", "degree"]
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        return [line for line in lines if any(keyword in line.lower() for keyword in keywords)]
 
     @staticmethod
     def _extract_experience(text: str) -> List[str]:
-        """Extract work experience"""
-        experience_keywords = ["experience", "worked", "responsibilities", "years"]
-        experience = []
-        lines = text.split('\n')
-        for i, line in enumerate(lines):
-            if any(keyword in line.lower() for keyword in experience_keywords):
-                experience.append(line.strip())
-                if i + 1 < len(lines):
-                    experience.append(lines[i + 1].strip())
-        return experience
+        keywords = ["experience", "intern", "engineer", "developer", "worked", "employment"]
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        return [line for line in lines if any(keyword in line.lower() for keyword in keywords)]
+
+    @staticmethod
+    def _extract_projects(text: str) -> List[str]:
+        keywords = ["project", "built", "developed", "created"]
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        return [line for line in lines if any(keyword in line.lower() for keyword in keywords)]
