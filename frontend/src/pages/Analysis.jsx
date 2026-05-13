@@ -25,8 +25,13 @@ export default function Analysis() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-12 left-8 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl animate-pulse" />
+        <div className="absolute bottom-12 right-8 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl animate-pulse" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -34,7 +39,7 @@ export default function Analysis() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="rounded-3xl bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border border-cyan-500/20 p-8">
+          <div className="rounded-3xl bg-gradient-to-r from-cyan-900/40 to-blue-900/40 border border-cyan-500/20 p-8 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.35)]">
             <h1 className="text-4xl font-bold text-white mb-2">
               Analysis Results
             </h1>

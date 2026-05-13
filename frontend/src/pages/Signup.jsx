@@ -59,7 +59,7 @@ export default function Signup({ onSignupSuccess }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-gradient-to-br from-slate-950 via-purple-900/20 to-slate-950">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4 py-8">
       {/* Background gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
@@ -70,9 +70,9 @@ export default function Signup({ onSignupSuccess }) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative w-full max-w-md"
+        className="relative z-10 w-full max-w-md"
       >
-        <div className="rounded-3xl bg-slate-900/50 p-8 backdrop-blur-xl border border-slate-700/50 shadow-2xl">
+        <div className="rounded-3xl bg-slate-900/60 p-8 backdrop-blur-2xl border border-slate-700/50 shadow-[0_20px_80px_rgba(0,0,0,0.45)]">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">

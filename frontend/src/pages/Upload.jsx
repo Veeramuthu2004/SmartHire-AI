@@ -96,13 +96,18 @@ export default function Upload() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900">
-      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 left-10 h-72 w-72 rounded-full bg-purple-500/15 blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-cyan-500/15 blur-3xl animate-pulse" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="rounded-3xl bg-slate-900/50 border border-slate-700/50 p-8 backdrop-blur-sm"
+          className="rounded-3xl bg-slate-900/60 border border-slate-700/50 p-8 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
         >
           {/* Header */}
           <div className="mb-8">
